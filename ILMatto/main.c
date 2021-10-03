@@ -9,6 +9,7 @@
 #define DEBUG_BAUD 9600
 
 #define NOSE_OFFSET 5
+#define NUM_TIMES 5
 
 void draw_outline(void);
 void draw_happy(void);
@@ -34,34 +35,6 @@ void draw_neutral_tongue(void);
 void read_serial(void);
 
 
-int uputchar1(char c, FILE *stream) {
-	if (c == '\n') uputchar1('\r', stream);
-	while (!(UCSR1A & _BV(UDRE1)));
-	UDR1 = c;
-	return c;
-}
-
-int ugetchar1(FILE *stream) {
-	while(!(UCSR1A & _BV(RXC1)));
-	return UDR1;
-}
-
-void init_debug_uart1(void) {
-	/* Configure UART0 baud rate, one start bit, 8-bit, no parity and one stop bit */
-	UBRR1H = (F_CPU/(DEBUG_BAUD*16L)-1) >> 8;
-	UBRR1L = (F_CPU/(DEBUG_BAUD*16L)-1);
-	UCSR1B = _BV(RXEN1) | _BV(TXEN1);
-	UCSR1C = _BV(UCSZ10) | _BV(UCSZ11);
-
-	/* Setup new streams for input and output */
-	static FILE uout = FDEV_SETUP_STREAM(uputchar1, NULL, _FDEV_SETUP_WRITE);
-	static FILE uin = FDEV_SETUP_STREAM(NULL, ugetchar1, _FDEV_SETUP_READ);
-
-	/* Redirect all standard streams to UART1 */
-	stdout = &uout;
-	stderr = &uout;
-	stdin = &uin;
-}
 
 
 
@@ -73,111 +46,69 @@ uint8_t cur_face = 0;
 int main() {
 
     init_lcd();
-
-    init_debug_uart1();
-
-
     set_orientation(North);
     clear_screen();
-
-    printf("Hello World!");
-    
-    
+    int i;
 
 
 
     while(1) {
 
-        read_serial();
-
-        if(cur_face == 0) {
-            clear_screen();
-        }
-        else if(cur_face == 1) {
+        //happy face
+        for(i=0; i<NUM_TIMES; i++) {
             draw_outline();
-            draw_happy_eyes1();
             draw_happy();
+            draw_happy_eyes1();
+            _delay_ms(500);
 
-            _delay_ms(600);
 
             draw_outline();
             draw_happy_eyes2();
+            _delay_ms(500);
+        }
+
+        //cool face
+        for(i=0; i<NUM_TIMES; i++) {
+            draw_outline();
+            draw_happy();
+            draw_glasses1();
+            _delay_ms(500);
+
+            draw_glasses2();
+            _delay_ms(500);
+        }
+
+        //sad face
+        for(i=0; i<NUM_TIMES; i++) {
+            draw_outline();
             draw_sad();
+            draw_sad_eye1();
+            _delay_ms(500);
 
-            _delay_ms(600);
-        }
-        else if(cur_face == 2) {
-            
-        }
-        else if(cur_face == 3) {
-            
-        }
-        else if(cur_face == 4) {
-            
-        }
-        else if(cur_face == 5) {
-            
-        }
-        else if(cur_face == 6) {
-            
-        }
-        else if(cur_face == 7) {
-            
-        }
-        else if(cur_face == 8) {
-            
-        }
-        else if(cur_face == 9) {
-            
+            draw_outline();
+            draw_sad();
+            draw_sad_eye2();
+            _delay_ms(500);
         }
 
-        _delay_ms(100);
+        //angry face
+        for(i=0; i<NUM_TIMES; i++) {
+            draw_outline();
+            draw_sad();
+            draw_angry_eye_black();
+            _delay_ms(500);
+
+            draw_outline();
+            draw_sad();
+            draw_angry_eye_red();
+            _delay_ms(500);
+        }
+
+        //crying face
+        for(i=0; i<NUM_TIMES; i++) {
+
+        }
     }
-
-
-
-
-
-
-    while(1) {
-        draw_outline();
-        draw_happy();
-        draw_glasses1();
-        _delay_ms(600);
-
-        draw_glasses2();
-        _delay_ms(600);
-    }
-
-    
-/*
-    while(1) {
-        draw_outline();
-        draw_sad();
-        draw_sad_eye1();
-        _delay_ms(600);
-
-        draw_outline();
-        draw_sad();
-        draw_sad_eye2();
-        _delay_ms(600);
-    }*/
-    
-/*
-    while(1) {
-        draw_outline();
-
-        draw_happy_eyes1();
-        draw_happy();
-        _delay_ms(600);
-
-
-        draw_outline();
-
-        draw_happy_eyes2();
-        draw_sad();
-        _delay_ms(600);
-    }*/
 }
 
 
